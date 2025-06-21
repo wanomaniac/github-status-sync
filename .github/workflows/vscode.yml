@@ -3,7 +3,7 @@ name: Produce a .vsix for the VSCode version of GSS
 on:
   push:
     branches:
-      - latest  # or your default branch
+      - latest 
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # or your preferred Node version
+          node-version: '18' 
 
       - name: Install dependencies
         working-directory: ./ide/vscode
