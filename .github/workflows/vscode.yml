@@ -33,7 +33,7 @@ jobs:
           name: gss-vscode
           path: './ide/vscode/*.vsix'
       - name: Publish to VS Code Marketplace
-        uses: lannonbr/vsce-action@v4
+        uses: lannonbr/vsce-action@4.0.0
         with:
              args: publish
              working-directory: ./ide/vscode
