@@ -2,7 +2,7 @@
   "name": "github-status-sync-vscode",
   "displayName": "GitHub Status Sync",
   "description": "An extension that will sync your current workspace name or git repository and time spent on it to your GitHub status",
-  "version": "1.0.1-stable",
+  "version": "1.0.1",
   "engines": {
     "vscode": "^1.45.0"
   },
