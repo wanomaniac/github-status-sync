@@ -27,7 +27,7 @@ jobs:
         run: npx vsce package
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: gss-vscode
           path: './ide/vscode/*.vsix'
