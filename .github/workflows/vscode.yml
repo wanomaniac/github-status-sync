@@ -1,4 +1,4 @@
-name: Produce a .vsix for the VSCode version of GSS
+name: Produce a .vsix for the VSCode version of GSS & Publishes it on the VSC marketplace
 permissions:
   contents: read
 on:
@@ -32,3 +32,10 @@ jobs:
         with:
           name: gss-vscode
           path: './ide/vscode/*.vsix'
+      - name: Publish VSCode extension to Marketplace
+        working-directory: ./ide/vscode
+        run: |
+          npm install -g vsce
+          vsce publish
+        env:
+          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}

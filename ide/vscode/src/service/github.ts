@@ -65,13 +65,17 @@ const repos = this.__gitApi.repositories;
 
   if (repos.length === 1){
     const gitUrl = repos[0].state.remotes.find((r:any) => r.fetchUrl);
-    if(gitUrl !== null){
+    if(gitUrl !== null && gitUrl !== undefined){
+      if(!gitUrl.fetchUrl){
+        vscode.window.showErrorMessage("Your git repository doesn't have an fetch url, so I assume it is incomplete!");
+      } else {
       const repoName = getRepoName(gitUrl.fetchUrl);
     if(repoName !== null){
       const rawUrl = gitUrl.fetchUrl ?? ""; // from gitAPI
       const cleanUrl = rawUrl.endsWith(".git") ? rawUrl.slice(0, -4) : rawUrl;
      workspace = repoName + ` (${cleanUrl})`; // cut the last 4 letters
     }
+  }
   }
   }
     
