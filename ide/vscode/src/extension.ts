@@ -32,8 +32,6 @@ export async function activate(context: vscode.ExtensionContext) {
         await handleUnsupportedLanguage(userLang, lang.unsupportedLang);
     }
 
-
-
   const folders = vscode.workspace.workspaceFolders;
   if (!folders || folders[0].uri.fsPath in config.get<string[]>("blacklist")!) {
     statusBarIcon.text = lang["status.blacklisted"];
