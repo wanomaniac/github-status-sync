@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -32,10 +32,3 @@ jobs:
         with:
           name: gss-vscode
           path: './ide/vscode/*.vsix'
-      - name: Publish to VS Code Marketplace
-        uses: lannonbr/vsce-action@v3
-        with:
-             args: publish
-             working-directory: ./ide/vscode
-        env:
-            VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
