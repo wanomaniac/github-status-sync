@@ -32,10 +32,10 @@ jobs:
         with:
           name: gss-vscode
           path: './ide/vscode/*.vsix'
-      - name: Publish VSCode extension to Marketplace
-        working-directory: ./ide/vscode
-        run: |
-          npm install -g vsce
-          vsce publish
+      - name: Publish to VS Code Marketplace
+        uses: lannonbr/vsce-action@v4
+        with:
+             args: publish
+             working-directory: ./ide/vscode
         env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+            VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
