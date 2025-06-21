@@ -1,0 +1,15 @@
+{
+  "name": "Github Status Sync",
+  "description": "Syncronizes what you're doing on the web on GitHub!",
+  "version": "1.0",
+  "manifest_version": 3,
+    "icons": {
+    "16": "logo_transparent.png",
+    "48": "logo_transparent.png",
+    "128": "logo_transparent.png"
+  },
+  "action": {
+    "default_popup": "hello.html",
+    "default_icon": "logo_transparent.png"
+  }
+}

@@ -1,0 +1,23 @@
+const path = require('path');
+
+module.exports = {
+  target: 'node',
+  entry: './src/extension.ts',
+  output: {
+    path: path.resolve(__dirname, 'out'),
+    filename: 'extension.js',
+    libraryTarget: 'commonjs2',
+  },
+  externals: {
+    vscode: 'commonjs vscode' // vscode module remains external
+  },
+  resolve: {
+    extensions: ['.ts', '.js']
+  },
+  module: {
+    rules: [
+      { test: /\.ts$/, use: 'ts-loader', exclude: /node_modules/ }
+    ]
+  },
+  mode: 'production'
+};

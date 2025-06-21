@@ -1,0 +1,33 @@
+name: Produce a .vsix for the VSCode version of GSS
+
+on:
+  push:
+    branches:
+      - latest  # or your default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # or your preferred Node version
+
+      - name: Install dependencies
+        working-directory: ./ide/vscode
+        run: npm install
+
+      - name: Package VSCode extension
+        working-directory: ./ide/vscode
+        run: npx vsce package
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: gss-vscode
+          path: './ide/vscode/*.vsix'

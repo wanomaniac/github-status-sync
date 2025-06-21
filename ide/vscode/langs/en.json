@@ -1,0 +1,14 @@
+{
+    "unsupportedLang": "Your language is not supported, this extension will use English! If you want to add your language, check our repository on how to do it.",
+    "tokenNeeded.desc": "Since you are synchronizing your GitHub status to your current VSCode session, You'll need to create a token",
+    "tokenNeeded.title": "Create Token",
+    "status.blackListed": "GitHub Status Blacklisted",
+    "status.synced": "GitHub Status Syncing",
+    "status.synced.tooltip": "Click to turn off syncing",
+    "status.unsynced": "GitHub Status Not Syncing",
+    "status.unsynced.tooltip": "Click to turn on syncing",
+    "accessToken.prompt": "Enter the github access token here",
+    "githubService.userStatus.full": "Working on ${workspace}${language}${diff}",
+    "githubService.userStatus.languange": " in ${language}", 
+     "githubService.userStatus.diff": " for ${diff}"
+}

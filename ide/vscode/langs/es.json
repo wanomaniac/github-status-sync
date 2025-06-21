@@ -1,0 +1,14 @@
+{
+  "unsupportedLang": "Su idioma no es compatible, ¡esta extensión usará inglés! ",
+  "tokenNeeded.desc": "Dado que está sincronizando su estado de GitHub a su sesión de Vscode actual, necesitará crear un token",
+  "tokenNeeded.title": "Crear token",
+  "status.blackListed": "Estado de Github en la lista negra",
+  "status.synced": "Sincronización del estado de Github",
+  "status.synced.tooltip": "Haga clic para desactivar la sincronización",
+  "status.unsynced": "El estado de GitHub no se sincroniza",
+  "status.unsynced.tooltip": "Haga clic para encender la sincronización",
+  "accessToken.prompt": "Ingrese el token de acceso de GitHub aquí",
+  "githubService.userStatus.full": "Trabajando en ${workspace}${language}${diff}",
+  "githubService.userStatus.languange": " en ${language}",
+  "githubService.userStatus.diff": " por ${diff}"
+}
