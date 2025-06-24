@@ -4,6 +4,7 @@ import { RequestParameters, graphql } from "@octokit/graphql/dist-types/types";
 import * as moment from "moment";
 import { format } from "../tools/translate";
 import path = require("path");
+import fetch from "node-fetch";
 
 interface IEnv {
   [key: string]: string | undefined;
@@ -32,11 +33,55 @@ export default class {
   private __currentLanguage?: string;
   private __gitApi : any;
   public received = false;
-  constructor(__lang: any, token?: string) {
+  private isHidden = false;
+  private dontAlertPrivacy = false;
+  private statusB : vscode.StatusBarItem;
+
+  private state: "Updated" | "Updating" | "WaitingUserInput" | "Offline" | "Error" = "Offline";
+
+  private updateStatusState(newState: "Updated" | "Updating" | "WaitingUserInput" | "Offline" | "Error", message?: string) {
+    this.state = newState;
+    switch (newState) {
+      case "Updated":
+        this.statusB.text = `$(check) ${this.lang["status.synced"]}`;
+        this.statusB.tooltip = message || this.lang["status.synced.tooltip"];
+        this.statusB.command = "githubstatus.deactivate";
+        this.statusB.color = undefined;
+        break;
+      case "Updating":
+        this.statusB.text = `$(sync~spin) ${this.lang["status.syncing"]}`;
+        this.statusB.tooltip = message || this.lang["status.syncing.tip"];
+        this.statusB.command = undefined;
+        this.statusB.color = undefined;
+        break;
+      case "WaitingUserInput":
+        this.statusB.text = `$(question) ${this.lang["status.userInput"]}`;
+        this.statusB.tooltip = message || this.lang["status.userInput.tooltip"];
+         this.statusB.command = undefined;
+        this.statusB.color = "#FFA500";
+        break;
+      case "Offline":
+        this.statusB.text = `$(cloud-off) ${this.lang["status.offline"]}`;
+        this.statusB.tooltip = this.lang["status.offline.tooltip"];
+         this.statusB.command = "githubstatus.retrystatus";
+        this.statusB.color = "#888888";
+        break;
+      case "Error":
+        this.statusB.text = `$(error) ${this.lang["status.error"]}`;
+        this.statusB.tooltip = message;
+        this.statusB.color = "#FF0000";
+       this.statusB.command = undefined;
+        break;
+    }
+    this.statusB.show();
+  }
+
+  constructor(__lang: any, statusButton: vscode.StatusBarItem, token?: string) {
         vscode.workspace.onDidSaveTextDocument((e) => {
       this.__currentLanguage = e.languageId;
     });
 
+    this.statusB = statusButton;
     this.lang = __lang;
 
       const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
@@ -60,24 +105,111 @@ export default class {
   }
 
   public async updateStatus(workspace: string): Promise<NodeJS.Timeout | null> {
-
+      this.updateStatusState("Updating");
 const repos = this.__gitApi.repositories;
 
-  if (repos.length === 1){
-    const gitUrl = repos[0].state.remotes.find((r:any) => r.fetchUrl);
-    if(gitUrl !== null && gitUrl !== undefined){
-      if(!gitUrl.fetchUrl){
-        vscode.window.showErrorMessage("Your git repository doesn't have an fetch url, so I assume it is incomplete!");
-      } else {
-      const repoName = getRepoName(gitUrl.fetchUrl);
+if(repos.length > 0){
+
+const gitUrl = repos[0].state.remotes.find((r:any) => r.fetchUrl);
+
+if(gitUrl){
+
+ const repoName = getRepoName(gitUrl.fetchUrl);
+  const blDatabase = vscode.workspace.getConfiguration("githubstatus").get("blacklist") as Array<string>;
+
+if(this.isHidden){
+  // check if not blacklisted
+     if(blDatabase.find((data) => data.includes(repoName!)) === undefined){ // no longer blacklisted
+        this.isHidden = false;
+     }
+} else {
+  // check if blacklisted
+  //   const blDatabase = vscode.workspace.getConfiguration("githubstatus").get("blacklist") as Array<string>;
+     const blData = blDatabase.find((data) => data.includes(repoName!));
+     if(blData !== undefined){ // blacklisted
+        this.isHidden = true;
+        if(blData.includes("%private%")){
+          // confirm if it is still private, otherwise, turn it public.
+           const fetchUrl = gitUrl.fetchUrl;
+          // Convert SSH to HTTPS if needed
+          let apiUrl = fetchUrl;
+          if (fetchUrl.startsWith("git@github.com:")) {
+        apiUrl = "https://github.com/" + fetchUrl.replace("git@github.com:", "").replace(/\.git$/, "");
+          } else if (fetchUrl.startsWith("https://github.com/")) {
+        apiUrl = fetchUrl.replace(/\.git$/, "");
+          }
+          // GitHub API for repo info
+          const repoApiUrl = apiUrl.replace("https://github.com/", "https://api.github.com/repos/");
+          const res = await fetch(repoApiUrl, { method: "GET" });
+          if (res.status !== 404) {
+            // Remove the element from the array
+            const index = blDatabase.indexOf(blData);
+            if (index > -1) {
+              blDatabase.splice(index, 1);
+              await vscode.workspace.getConfiguration("githubstatus").update("blacklist", blDatabase, vscode.ConfigurationTarget.Global);
+            }
+            this.isHidden = false;
+          }
+        }
+     }
+}
+
+
+       
+        // GET the repo fetchURL to see if its public, if 404, then its not public, send a warning prompt saying this github project is not public, do you want to hide the details
+        try {
+          if(!this.isHidden && !this.dontAlertPrivacy){
+          const fetchUrl = gitUrl.fetchUrl;
+          // Convert SSH to HTTPS if needed
+          let apiUrl = fetchUrl;
+          if (fetchUrl.startsWith("git@github.com:")) {
+        apiUrl = "https://github.com/" + fetchUrl.replace("git@github.com:", "").replace(/\.git$/, "");
+          } else if (fetchUrl.startsWith("https://github.com/")) {
+        apiUrl = fetchUrl.replace(/\.git$/, "");
+          }
+          // GitHub API for repo info
+          const repoApiUrl = apiUrl.replace("https://github.com/", "https://api.github.com/repos/");
+          const res = await fetch(repoApiUrl, { method: "GET" });
+          if (res.status === 404) {
+        this.updateStatusState("WaitingUserInput");
+        const hide = await vscode.window.showWarningMessage(
+          this.lang["githubService.repo.hide"],
+          this.lang["githubService.repo.hide.yes"], this.lang["githubService.repo.hide.no"]
+        );
+
+  this.updateStatusState("Updating");
+
+        if (hide === this.lang["githubService.repo.hide.yes"]) {
+          vscode.window.showInformationMessage(this.lang["githubService.repo.hidden_now"]);
+         blDatabase.push(`%private%${repoName}`); // %private 
+         await vscode.workspace.getConfiguration("githubstatus").update("blacklist", blDatabase, vscode.ConfigurationTarget.Global);
+          this.isHidden = true;
+        } else {
+            this.dontAlertPrivacy = true;
+        }
+          }
+          }
+        } catch (err) {
+          vscode.window.showWarningMessage(this.lang["githubService.repo.failed_visibilty"]);
+        }
+
+        if(!this.isHidden){
     if(repoName !== null){
       const rawUrl = gitUrl.fetchUrl ?? ""; // from gitAPI
-      const cleanUrl = rawUrl.endsWith(".git") ? rawUrl.slice(0, -4) : rawUrl;
-     workspace = repoName + ` (${cleanUrl})`; // cut the last 4 letters
+      let cleanUrl = rawUrl.endsWith(".git") ? rawUrl.slice(0, -4) : rawUrl;
+      cleanUrl = cleanUrl.replace("https://github.com/", ""); // Since GitHub statuses are only on github, adding github.com is pointless.
+     workspace = cleanUrl; // I've decided from the status being working on [status] (link) to just working on [cut link] for easier work.
     }
+  } else {
+      workspace = this.lang["githubService.repo.private"];
   }
+} else {
+   vscode.window.showErrorMessage(this.lang["githubService.repo.nourl"]);
+}
+
   }
-  }
+  
+
     
 
     const emoji = vscode.workspace
@@ -113,11 +245,16 @@ const repos = this.__gitApi.repositories;
   ? format(this.lang["githubService.userStatus.diff"], { diff })
   : "";
 
-  const message = format(this.lang["githubService.userStatus.full"], {
+  let message = format(this.lang["githubService.userStatus.full"], {
   workspace,
   language: langPart,
   diff: diffPart
 });
+
+if(message.length > 80){
+  vscode.window.showWarningMessage(this.lang["githubService.char_limit"]);
+  message = message.slice(0, 80);
+}
 
     const status: UserStatus = {
       expiresAt: new Date(
@@ -128,8 +265,21 @@ const repos = this.__gitApi.repositories;
     };
     try {
       await this.__api(changeUserStatusMutation, { request: {}, status });
+      this.updateStatusState("Updated");
     } catch (err) {
+      // check if err is network related
       console.error(err);
+      if (err && typeof err === "object" && "message" in err && typeof err.message === "string" && (
+        err.message.includes("network") ||
+        err.message.includes("ENOTFOUND") ||
+        err.message.includes("ECONNREFUSED") ||
+        err.message.includes("ECONNRESET") ||
+        err.message.includes("ETIMEDOUT")
+      )) {
+        this.updateStatusState("Offline");
+      } else {
+        this.updateStatusState("Error", `${err}`);
+      }
     } finally {
       return interval;
     }

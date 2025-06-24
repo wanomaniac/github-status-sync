@@ -2,7 +2,7 @@
   "name": "github-status-sync-vscode",
   "displayName": "GitHub Status Sync",
   "description": "An extension that will sync your current workspace name or git repository and time spent on it to your GitHub status",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "engines": {
     "vscode": "^1.45.0"
   },
@@ -34,7 +34,7 @@
           "githubstatus.notsupportedlang": {
             "type": "boolean",
             "default": "false",
-            "description": "Would not warn you if true"
+            "description": "Would not warn you if true ["
           },
           "githubstatus.token": {
             "type": "string",
@@ -2964,7 +2964,7 @@
   },
   "scripts": {
     "vscode:prepublish": "webpack",
-    "build": "npm prune --production && npx vsce package",
+    "build": "npx vsce package",
     "compile": "tsc -p ./",
     "lint": "eslint src --ext ts",
     "watch": "tsc -watch -p ./",
@@ -2974,7 +2974,7 @@
   "devDependencies": {
     "@types/glob": "^7.1.1",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.11.0",
+    "@types/node": "^18.19.112",
     "@types/vscode": "^1.45.0",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
@@ -2983,14 +2983,15 @@
     "glob": "^7.1.6",
     "mocha": "^11.7.0",
     "ts-loader": "^9.5.2",
-    "typescript": "^3.8.3",
+    "typescript": "^5.8.3",
     "vscode-test": "^1.3.0",
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@octokit/graphql": "^9.0.1",
-    "moment": "^2.26.0"
+    "moment": "^2.26.0",
+    "node-fetch": "^3.3.2"
   },
   "extensionDependencies": [
     "vscode.git"

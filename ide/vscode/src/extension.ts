@@ -10,6 +10,7 @@ let config = vscode.workspace.getConfiguration("githubstatus");
 let interval: NodeJS.Timeout | null = null;
 let gitHubService: GitHubServce;
 let lang : any | null = null;
+let gApi;
 
 export async function activate(context: vscode.ExtensionContext) {
     // Load lang
@@ -33,21 +34,32 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
   const folders = vscode.workspace.workspaceFolders;
+
   if (!folders || folders[0].uri.fsPath in config.get<string[]>("blacklist")!) {
     statusBarIcon.text = lang["status.blacklisted"];
     return;
   }
+
+  
   const token = config.get<string>("token");
   
-  gitHubService = new GitHubServce(lang, token);
-  await waitForGitScanComplete(git.getAPI(1));
-  statusBarIcon.show();
+  gitHubService = new GitHubServce(lang, statusBarIcon, token);
+  gApi = git.getAPI(1);
+  await waitForGitScanComplete(gApi);
+
+    statusBarIcon.show();
+
+  if (!folders || folders[0].uri.fsPath in config.get<string[]>("blacklist")!) {
+    statusBarIcon.text = lang["status.blacklisted"];
+    return;
+  }
+
   if (gitHubService.received && vscode.workspace.name) {
     interval = await gitHubService.updateStatus(vscode.workspace.name);
   }
-  statusBarIcon.text = lang["status.synced"];
-  statusBarIcon.command = "githubstatus.deactivate";
-  statusBarIcon.tooltip = lang["status.synced.tooltip"];
+  // statusBarIcon.text = lang["status.synced"];
+  // statusBarIcon.command = "githubstatus.deactivate";
+  // statusBarIcon.tooltip = lang["status.synced.tooltip"];
   try {
 
 
@@ -104,6 +116,14 @@ export async function activate(context: vscode.ExtensionContext) {
       () => {
         console.log("Deactivating");
         deactivate();
+      }
+    );
+     let retry = vscode.commands.registerCommand(
+      "githubstatus.retrystatus",
+      async () => {
+        console.log("Retrying");
+       deactivate();
+       activate(context);
       }
     );
     context.subscriptions.push(disposable, accessToken, restart, deac);

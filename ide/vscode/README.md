@@ -8,6 +8,11 @@ When installing this extension, it will notify you to create a token, which will
 Once, the token has successfully worked, no need to do anything, thats all.
 
 ## Version History
+### 1.0.2-STABLE
+- Major changes when it comes to privacy, you will now be notified when a private repo you are working on is detected to be synchronized, you can make a choice if you want to hide it.
+- Bug fixes 
+- More lingual text options
+
 ### 1.0.1-STABLE
 - Minor bug fixes related to fetch urls
 
